@@ -9,7 +9,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#include <fstream>
 #include <sys/types.h>
+#include <vector>
 //#include <sys/socket.h>
 #pragma comment(lib, "ws2_32.lib")
 
@@ -60,7 +62,9 @@ int main()
         return 0;
     }
     int s = socket(PF_INET, SOCK_STREAM, 0);
-    
+    char* msg = new char[1024];
+    size_t datasize;
+
 
 
 
@@ -76,6 +80,31 @@ int main()
         return 0;
     }
     cout << "Polaczenie udane" << endl;
+    vector <char> fileData(1024);
+    int bytesReceived = recv(sockfd, fileData.data(), fileData.size(), 0);
+    cout << bytesReceived;
+   
+    int received = 0;
+    char buffer[256];
+    if(bytesReceived == SOCKET_ERROR)
+    {
+        cout << "Error:" << WSAGetLastError() << endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return 1;
+    } 
+    ofstream outputFile("received_text.txt", ios::binary);
+    if (!outputFile.is_open())
+    {
+        cout << "File did not open" << endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return 1;
+    }
+    outputFile.write(fileData.data(), bytesReceived);
+    outputFile.close();
+
+    cout << "File transfered" << endl;
 
 
     freeaddrinfo(servinfo);
